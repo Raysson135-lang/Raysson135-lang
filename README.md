@@ -1,4 +1,4 @@
-### Ola seja bem vndom ao meu perfl 🖥️
+### Ola seja bem vindo ao meu perfl ✨
 
 Meu nome é Raysson
 
