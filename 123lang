@@ -1,0 +1,169 @@
+import React, { useRef, useState, useEffect } from "react";
+
+// AppDesenho.jsx // Single-file React component (Tailwind) para um app de desenho simples // - Caneta/borracha // - Tamanho do traço // - Seleção de cor // - Undo/Redo // - Limpar e salvar PNG // - Suporte a mouse e toque
+
+export default function AppDesenho() { const canvasRef = useRef(null); const ctxRef = useRef(null); const drawing = useRef(false); const lastPoint = useRef({ x: 0, y: 0 });
+
+const [color, setColor] = useState("#000000"); const [size, setSize] = useState(6); const [isEraser, setIsEraser] = useState(false); const [history, setHistory] = useState([]); const [historyIndex, setHistoryIndex] = useState(-1); const [showGrid, setShowGrid] = useState(false); const [transparent, setTransparent] = useState(false);
+
+// Inicializa canvas useEffect(() => { const canvas = canvasRef.current; const dpr = window.devicePixelRatio || 1; const rect = canvas.getBoundingClientRect(); canvas.width = rect.width * dpr; canvas.height = rect.height * dpr; canvas.style.width = ${rect.width}px; canvas.style.height = ${rect.height}px;
+
+const ctx = canvas.getContext("2d");
+ctx.scale(dpr, dpr);
+ctx.lineCap = "round";
+ctx.lineJoin = "round";
+ctxRef.current = ctx;
+
+// set white background initially (unless transparent)
+if (!transparent) {
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, rect.width, rect.height);
+} else {
+  ctx.clearRect(0, 0, rect.width, rect.height);
+}
+
+saveHistory();
+// eslint-disable-next-line react-hooks/exhaustive-deps
+
+}, []);
+
+// When transparent toggled, redraw background accordingly useEffect(() => { const canvas = canvasRef.current; const ctx = ctxRef.current; if (!canvas || !ctx) return; const rect = canvas.getBoundingClientRect(); const img = new Image(); img.src = canvas.toDataURL(); img.onload = () => { // clear whole canvas ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.restore();
+
+if (!transparent) {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+  }
+  ctx.drawImage(img, 0, 0, rect.width, rect.height);
+  saveHistory(false);
+};
+// eslint-disable-next-line react-hooks/exhaustive-deps
+
+}, [transparent]);
+
+function getPointerPos(e) { const canvas = canvasRef.current; const rect = canvas.getBoundingClientRect(); if (e.touches && e.touches[0]) { return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top }; } return { x: e.clientX - rect.left, y: e.clientY - rect.top }; }
+
+function startDrawing(e) { e.preventDefault(); drawing.current = true; const pos = getPointerPos(e); lastPoint.current = pos; }
+
+function stopDrawing(e) { if (!drawing.current) return; drawing.current = false; const ctx = ctxRef.current; ctx.beginPath(); saveHistory(); }
+
+function draw(e) { if (!drawing.current) return; const ctx = ctxRef.current; const pos = getPointerPos(e); ctx.strokeStyle = isEraser ? "rgba(0,0,0,1)" : color; ctx.globalCompositeOperation = isEraser ? "destination-out" : "source-over"; ctx.lineWidth = size;
+
+ctx.beginPath();
+ctx.moveTo(lastPoint.current.x, lastPoint.current.y);
+ctx.lineTo(pos.x, pos.y);
+ctx.stroke();
+lastPoint.current = pos;
+
+}
+
+// Save canvas state into history for undo/redo function saveHistory(push = true) { const canvas = canvasRef.current; if (!canvas) return; const data = canvas.toDataURL(); setHistory((h) => { const next = h.slice(0, historyIndex + 1); next.push(data); const limited = next.slice(-50); // keep last 50 setHistoryIndex(limited.length - 1); return limited; }); if (!push) return; }
+
+function undo() { if (historyIndex <= 0) return; const newIndex = historyIndex - 1; setHistoryIndex(newIndex); restoreFromDataUrl(history[newIndex]); }
+
+function redo() { if (historyIndex >= history.length - 1) return; const newIndex = historyIndex + 1; setHistoryIndex(newIndex); restoreFromDataUrl(history[newIndex]); }
+
+function restoreFromDataUrl(dataUrl) { const canvas = canvasRef.current; const ctx = ctxRef.current; const rect = canvas.getBoundingClientRect(); const img = new Image(); img.src = dataUrl; img.onload = () => { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.restore(); if (!transparent) { ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, rect.width, rect.height); } ctx.drawImage(img, 0, 0, rect.width, rect.height); }; }
+
+function clearCanvas() { const canvas = canvasRef.current; const ctx = ctxRef.current; const rect = canvas.getBoundingClientRect(); ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.restore(); if (!transparent) { ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, rect.width, rect.height); } saveHistory(); }
+
+function saveImage() { const canvas = canvasRef.current; const link = document.createElement("a"); link.download = desenho-${new Date().toISOString()}.png; link.href = canvas.toDataURL("image/png"); link.click(); }
+
+// small helper to toggle eraser function toggleEraser() { setIsEraser((v) => !v); }
+
+return ( <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4"> <h1 className="text-2xl font-semibold mb-4">App de Desenho</h1>
+
+<div className="w-full max-w-4xl bg-white rounded-2xl shadow p-4">
+    <div className="flex gap-3 items-center mb-3">
+      <div className="flex items-center gap-2">
+        <label className="text-sm">Cor</label>
+        <input
+          aria-label="Selecionar cor"
+          type="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          className="w-10 h-10 p-0 rounded"
+        />
+      </div>
+
+      <div className="flex items-center gap-2">
+        <label className="text-sm">Tamanho</label>
+        <input
+          type="range"
+          min={1}
+          max={60}
+          value={size}
+          onChange={(e) => setSize(Number(e.target.value))}
+        />
+        <div className="w-8 text-right">{size}</div>
+      </div>
+
+      <button
+        onClick={toggleEraser}
+        className={`px-3 py-2 rounded-lg border ${isEraser ? "bg-gray-200" : ""}`}
+      >
+        {isEraser ? "Borracha (ON)" : "Borracha"}
+      </button>
+
+      <button onClick={undo} className="px-3 py-2 rounded-lg border">
+        Undo
+      </button>
+
+      <button onClick={redo} className="px-3 py-2 rounded-lg border">
+        Redo
+      </button>
+
+      <button onClick={clearCanvas} className="px-3 py-2 rounded-lg border">
+        Limpar
+      </button>
+
+      <button onClick={saveImage} className="ml-auto px-3 py-2 rounded-lg bg-green-500 text-white">
+        Salvar PNG
+      </button>
+    </div>
+
+    <div className="flex gap-3 items-center mb-3 text-sm">
+      <label className="flex items-center gap-2">
+        <input type="checkbox" checked={transparent} onChange={(e) => setTransparent(e.target.checked)} />
+        Fundo transparente
+      </label>
+
+      <label className="flex items-center gap-2">
+        <input type="checkbox" checked={showGrid} onChange={(e) => setShowGrid(e.target.checked)} />
+        Mostrar grade
+      </label>
+    </div>
+
+    <div className="w-full h-[600px] border rounded-lg overflow-hidden relative">
+      {showGrid && (
+        <div className="absolute inset-0 pointer-events-none">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+          </svg>
+        </div>
+      )}
+
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full touch-none"
+        onMouseDown={startDrawing}
+        onMouseUp={stopDrawing}
+        onMouseOut={stopDrawing}
+        onMouseMove={draw}
+        onTouchStart={startDrawing}
+        onTouchEnd={stopDrawing}
+        onTouchCancel={stopDrawing}
+        onTouchMove={draw}
+      />
+    </div>
+
+    <p className="text-xs text-gray-500 mt-3">Dica: use caneta/estilo em dispositivos com suporte para desenhar com mais precisão.</p>
+  </div>
+</div>
+
+); }
+
