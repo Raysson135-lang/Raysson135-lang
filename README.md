@@ -6,6 +6,6 @@ Meu nome é Raysson
 -To desenvolvendo na linguagem javaScript
 -utilizo esse espaço para mina organzaçao e compatilhamento dos meus *Projetos* _desenvolvindos_
 
-![](https://media1.tenor.com/m/EWYXEGs3XskAAAAd/i-phone.gif)
+![](https://media1.tenor.com/m/EWYXEGs3XskAAAAd/i-phone.gifhttps://media1.tenor.com/m/Yx0uMcIl7VsAAAAC/apple-iphone13.gif
 ![](https://media1.tenor.com/m/sWEUdV5LQdkAAAAC/yes-apple.gif)
 ![](https://media1.tenor.com/m/wVWx8DALpwoAAAAd/apple-aplle-event.gif)
