@@ -1,0 +1,30 @@
+from datetime import date
+
+def calculadora_aniversario():
+    hoje = date.today()
+    print("=== Calculadora Inteligente de Aniversários ===")
+    escolha = input("Você quer informar (1) a data de nascimento ou (2) apenas a idade? ")
+
+    if escolha == "1":
+        # Usuário informa a data de nascimento
+        dia = int(input("Digite o dia de nascimento: "))
+        mes = int(input("Digite o mês de nascimento: "))
+        ano = int(input("Digite o ano de nascimento: "))
+
+        # Calcula idade
+        idade = hoje.year - ano - ((hoje.month, hoje.day) < (mes, dia))
+
+        print(f"\n📅 Você nasceu em {dia:02d}/{mes:02d}/{ano}.")
+        print(f"🎂 Sua idade atual é {idade} anos.")
+
+    elif escolha == "2":
+        # Usuário informa apenas a idade
+        idade = int(input("Digite sua idade: "))
+        ano_nascimento = hoje.year - idade
+        print(f"\n🎂 Se você já fez aniversário este ano, nasceu em {ano_nascimento}.")
+        print(f"🎂 Se ainda não fez, nasceu em {ano_nascimento - 1}.")
+    else:
+        print("Opção inválida. Tente novamente.")
+
+# Executa
+calculadora_aniversario()
