@@ -13,4 +13,5 @@ Meu nome é Raysson
 ![](https://media1.tenor.com/m/wVWx8DALpwoAAAAd/apple-aplle-event.gif)
 ![](https://media1.tenor.com/m/SinzaDrNOgoAAAAC/apple-apple-iphone.gif)
 ![](https://media1.tenor.com/m/HCwGaejAonoAAAAd/apple-apple-iphone.gif)
-
+![](https://media1.tenor.com/m/YhIw0Oa22c8AAAAC/apple-apple-iphone.gif)
+![](https://media1.tenor.com/m/dkkY11EN-w8AAAAd/apple-apple-iphone.gif)
